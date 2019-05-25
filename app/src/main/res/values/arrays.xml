@@ -1,0 +1,31 @@
+<?xml version="1.0" encoding="utf-8"?>
+<resources>
+    <string-array name="categories_array">
+        <item>Arts</item>
+        <item>Automobiles</item>
+        <item>Books</item>
+        <item>Business</item>
+        <item>Fashion</item>
+        <item>Food</item>
+        <item>Health</item>
+        <item>Home</item>
+        <item>Insider</item>
+        <item>Magazine</item>
+        <item>Movies</item>
+        <item>National</item>
+        <item>NY Region</item>
+        <item>Obituaries</item>
+        <item>Opinion</item>
+        <item>Politics</item>
+        <item>Real Estate</item>
+        <item>Science</item>
+        <item>Sport</item>
+        <item>Sunday Review</item>
+        <item>Technology</item>
+        <item>Theater</item>
+        <item>TMagazine</item>
+        <item>Travel</item>
+        <item>Upshot</item>
+        <item>World</item>
+    </string-array>
+</resources>
