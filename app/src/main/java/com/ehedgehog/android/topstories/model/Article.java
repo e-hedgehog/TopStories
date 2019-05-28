@@ -7,13 +7,15 @@ import java.util.List;
 
 import io.realm.RealmList;
 import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
-public class Article extends RealmObject implements Serializable {
+public class Article extends RealmObject {
 
     @SerializedName("title")
     private String mTitle;
     @SerializedName("abstract")
     private String mAbstract;
+    @PrimaryKey
     @SerializedName("url")
     private String mUrl;
     @SerializedName("byline")

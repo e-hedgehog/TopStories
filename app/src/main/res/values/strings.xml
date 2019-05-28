@@ -1,4 +1,9 @@
 <resources>
     <string name="app_name">TopStories</string>
     <string name="article_image_descr">Article image</string>
+    <string name="api_date_format">yyyy-mm-dd\'T\'HH:mm:ssz</string>
+    <string name="date_format">dd.MM.yyyy HH:mm:ss</string>
+    <string name="details_image_descr">Story Details Image</string>
+    <string name="published_at_label">Published At:</string>
+    <string name="details_subtitle">Details</string>
 </resources>

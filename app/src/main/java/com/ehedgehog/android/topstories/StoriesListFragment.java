@@ -8,7 +8,6 @@ import android.support.annotation.NonNull;
 import android.support.annotation.Nullable;
 import android.support.v4.app.Fragment;
 import android.support.v4.widget.SwipeRefreshLayout;
-import android.support.v7.app.AppCompatActivity;
 import android.support.v7.widget.DividerItemDecoration;
 import android.support.v7.widget.LinearLayoutManager;
 import android.support.v7.widget.RecyclerView;
@@ -23,36 +22,24 @@ import android.widget.Spinner;
 import android.widget.Toast;
 
 import com.ehedgehog.android.topstories.model.Article;
-import com.ehedgehog.android.topstories.model.StoriesResponse;
 import com.ehedgehog.android.topstories.network.ApiFactory;
 
 import java.util.List;
 
-import io.reactivex.Observable;
-import io.reactivex.android.schedulers.AndroidSchedulers;
 import io.reactivex.disposables.Disposable;
-import io.reactivex.schedulers.Schedulers;
-import io.realm.Realm;
-import io.realm.RealmResults;
 
 public class StoriesListFragment extends Fragment {
 
     private static final String TAG = "StoriesListFragment";
-
-//    private static final int ITEMS_PER_PAGE = 20;
 
     private SwipeRefreshLayout mRefreshLayout;
     private RecyclerView mRecyclerView;
     private ProgressBar mProgressBar;
     private Spinner mCategorySpinner;
 
-//    private int mCurrentPage;
-    private String mCategory;
-    private String mCountry;
+    private StoriesPresenter mPresenter;
 
-//    private int mTotalItems;
-//    private int mPagesCount;
-    private boolean isLoading = false;
+    private String mCategory;
 
     private Disposable mStoriesSubscription;
 
@@ -66,8 +53,6 @@ public class StoriesListFragment extends Fragment {
         setHasOptionsMenu(true);
 
         isOnline();
-
-//        mCurrentPage = 1;
     }
 
     @Nullable
@@ -76,43 +61,22 @@ public class StoriesListFragment extends Fragment {
                              @Nullable Bundle savedInstanceState) {
         View view = inflater.inflate(R.layout.fragment_stories_list, container, false);
 
-        AppCompatActivity activity = (AppCompatActivity) getActivity();
-        if (activity != null) {
-            activity.getSupportActionBar().setIcon(R.mipmap.ic_launcher);
-        }
+        setupStoriesPresenter();
 
-        mRefreshLayout = view.findViewById(R.id.news_list_refresh_container);
+        mRefreshLayout = view.findViewById(R.id.stories_list_refresh_container);
         setupSwipeRefresh();
 
-        mCategorySpinner = view.findViewById(R.id.news_category_spinner);
+        mCategorySpinner = view.findViewById(R.id.stories_category_spinner);
         setupCategorySpinner();
 
-        mProgressBar = view.findViewById(R.id.news_progress_bar);
-        mRecyclerView = view.findViewById(R.id.news_recycler_view);
+        mProgressBar = view.findViewById(R.id.stories_progress_bar);
+        mRecyclerView = view.findViewById(R.id.stories_recycler_view);
         LinearLayoutManager layoutManager = new LinearLayoutManager(getActivity());
         mRecyclerView.setLayoutManager(layoutManager);
         mRecyclerView.addItemDecoration(new DividerItemDecoration(getActivity(),
                 DividerItemDecoration.VERTICAL));
-//        mRecyclerView.addOnScrollListener(new RecyclerView.OnScrollListener() {
-//            @Override
-//            public void onScrolled(@NonNull RecyclerView recyclerView, int dx, int dy) {
-//                super.onScrolled(recyclerView, dx, dy);
-//                int visibleItemsCount = layoutManager.getChildCount();
-//                int invisibleItemsCount = layoutManager.findFirstVisibleItemPosition();
-//                int totalItemsCount = layoutManager.getItemCount();
-//                if ((visibleItemsCount + invisibleItemsCount) >= totalItemsCount) {
-//                    if ((mCurrentPage <= mPagesCount) && !isLoading) {
-//                        Log.i(TAG, "Loading new data...");
-//                        mCurrentPage++;
-//                        mProgressBar.setVisibility(View.VISIBLE);
-//                        loadNews(getAllNews(mCategory));
-//                    }
-//                }
-//            }
-//        });
 
-
-        loadNews(getAllNews(mCategory));
+        loadStories(mCategory);
 
         return view;
     }
@@ -125,40 +89,23 @@ public class StoriesListFragment extends Fragment {
         super.onPause();
     }
 
-    private void loadNews(Observable<StoriesResponse> observable) {
-        mStoriesSubscription = observable
-                .map(storiesResponse -> {
-                    isLoading = true;
-                    Log.i(TAG, "Status = " + storiesResponse.getStatus());
-                    return storiesResponse.getArticles();
-                })
-                .flatMap(articles -> {
-                    Realm.init(getActivity());
-                    Realm.getDefaultInstance().executeTransaction(realm -> {
-//                        if (mCurrentPage == 1)
-                        realm.delete(Article.class);
-                        realm.insert(articles);
-                    });
-                    return Observable.just(articles);
-                })
-                .onErrorResumeNext(throwable -> {
-                    Log.e(TAG, "Something is wrong", throwable);
-                    Realm.init(getActivity());
-                    Realm realm = Realm.getDefaultInstance();
-                    RealmResults<Article> results = realm.where(Article.class).findAll();
-                    return Observable.just(realm.copyFromRealm(results));
-                })
-                .subscribeOn(Schedulers.io())
-                .observeOn(AndroidSchedulers.mainThread())
-                .subscribe(this::updateUI, throwable ->
-                        Log.e(TAG, "Something is wrong", throwable));
+    private void loadStories(String category) {
+        mStoriesSubscription = mPresenter.loadStories(getActivity(), category);
     }
 
-    private Observable<StoriesResponse> getAllNews(String category) {
-        category = category.toLowerCase().replaceAll("\\s", "");
-        Log.i(TAG, "category = " + category);
-        return ApiFactory.buildNewsService()
-                .getStories(category);
+    private void setupStoriesPresenter() {
+        mPresenter = new StoriesPresenter(ApiFactory.buildStoriesService());
+        mPresenter.addListener(new StoriesPresenter.Listener() {
+            @Override
+            public void onStoriesLoaded(List<Article> articles) {
+                updateUI(articles);
+            }
+
+            @Override
+            public void onLoadingError(String message) {
+                Log.e(TAG, message);
+            }
+        });
     }
 
     private void updateUI(List<Article> articles) {
@@ -167,17 +114,10 @@ public class StoriesListFragment extends Fragment {
             adapter = new StoriesAdapter(getActivity(), articles);
             mRecyclerView.setAdapter(adapter);
         } else {
-//            if (mCurrentPage == 1) {
-                adapter.setArticles(articles);
-                adapter.notifyDataSetChanged();
-//            } else {
-//                adapter.addAll(articles);
-//                adapter.notifyItemRangeInserted(
-//                        mCurrentPage * ITEMS_PER_PAGE, ITEMS_PER_PAGE);
-//            }
+            adapter.setArticles(articles);
+            adapter.notifyDataSetChanged();
         }
 
-        isLoading = false;
         mProgressBar.setVisibility(View.GONE);
     }
 
@@ -201,9 +141,8 @@ public class StoriesListFragment extends Fragment {
         );
         mRefreshLayout.setOnRefreshListener(() -> {
             mRefreshLayout.setRefreshing(true);
-//            mCurrentPage = 1;
             if (isOnline()) {
-                loadNews(getAllNews(mCategory));
+                loadStories(mCategory);
             }
             mRefreshLayout.setRefreshing(false);
         });
@@ -226,8 +165,8 @@ public class StoriesListFragment extends Fragment {
                 mCategory = categories[position];
                 StoriesPreferences.setStoredCategory(getActivity(), position);
                 mProgressBar.setVisibility(View.VISIBLE);
-//                mCurrentPage = 1;
-                loadNews(getAllNews(mCategory));
+
+                loadStories(mCategory);
             }
 
             @Override

@@ -44,7 +44,7 @@ public class StoryHolder extends RecyclerView.ViewHolder implements View.OnClick
     @Override
     public void onClick(View v) {
         Context context = v.getContext();
-//        Intent i = ArticleActivity.newIntent(context, mArticle);
-//        context.startActivity(i);
+        Intent i = StoryDetailsActivity.newIntent(context, mArticle.getUrl());
+        context.startActivity(i);
     }
 }

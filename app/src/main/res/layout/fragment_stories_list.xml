@@ -3,15 +3,15 @@
     xmlns:android="http://schemas.android.com/apk/res/android"
     xmlns:app="http://schemas.android.com/apk/res-auto"
     xmlns:tools="http://schemas.android.com/tools"
-    android:id="@+id/news_list_refresh_container"
+    android:id="@+id/stories_list_refresh_container"
     android:layout_width="match_parent"
     android:layout_height="match_parent">
 
     <android.support.constraint.ConstraintLayout
-        android:id="@+id/news_container"
+        android:id="@+id/stories_container"
         android:layout_width="match_parent"
         android:layout_height="match_parent"
-        tools:context=".NewsListActivity">
+        tools:context=".StoriesListActivity">
 
         <LinearLayout
             android:id="@+id/filters_container"
@@ -25,7 +25,7 @@
             app:layout_constraintTop_toTopOf="parent">
 
             <Spinner
-                android:id="@+id/news_category_spinner"
+                android:id="@+id/stories_category_spinner"
                 android:layout_width="wrap_content"
                 android:layout_height="wrap_content"
                 android:layout_marginEnd="16dp"
@@ -34,7 +34,7 @@
         </LinearLayout>
 
         <android.support.v7.widget.RecyclerView
-            android:id="@+id/news_recycler_view"
+            android:id="@+id/stories_recycler_view"
             android:layout_width="match_parent"
             android:layout_height="0dp"
             android:layout_marginTop="8dp"
@@ -44,7 +44,7 @@
             app:layout_constraintTop_toBottomOf="@+id/filters_container" />
 
         <ProgressBar
-            android:id="@+id/news_progress_bar"
+            android:id="@+id/stories_progress_bar"
             android:layout_width="wrap_content"
             android:layout_height="wrap_content"
             android:layout_marginStart="8dp"

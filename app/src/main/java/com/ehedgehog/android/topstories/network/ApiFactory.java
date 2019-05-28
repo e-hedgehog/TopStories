@@ -11,18 +11,18 @@ import retrofit2.converter.gson.GsonConverterFactory;
 public class ApiFactory {
 
     private static OkHttpClient sClient;
-    private volatile static NewsService sService;
+    private volatile static StoriesService sService;
 
     public ApiFactory() {
     }
 
-    public static NewsService buildNewsService() {
-        NewsService service = sService;
+    public static StoriesService buildStoriesService() {
+        StoriesService service = sService;
         if (service == null) {
             synchronized (ApiFactory.class) {
                 service = sService;
                 if (service == null)
-                    service = sService = buildRetrofit().create(NewsService.class);
+                    service = sService = buildRetrofit().create(StoriesService.class);
             }
         }
         return service;

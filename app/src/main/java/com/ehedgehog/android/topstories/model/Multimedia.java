@@ -3,10 +3,11 @@ package com.ehedgehog.android.topstories.model;
 import com.google.gson.annotations.SerializedName;
 
 import io.realm.RealmObject;
+import io.realm.annotations.PrimaryKey;
 
 import java.io.Serializable;
 
-public class Multimedia extends RealmObject implements Serializable {
+public class Multimedia extends RealmObject {
 
     @SerializedName("url")
     private String mUrl;
